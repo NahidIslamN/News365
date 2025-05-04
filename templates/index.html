@@ -1,0 +1,245 @@
+{% extends 'basepage.html' %}
+
+
+{% block extralinks %}
+<style>
+    .text-over-image {
+    color: white;
+    text-shadow: 0 0 5px rgba(0, 0, 0, 0.7);
+    font-weight: bold;
+    }
+
+    .bg-wrapper {
+    position: relative;
+    background-image: url('{{ latest_news.0.image1 }}');
+    background-size: cover;
+    background-position: center;
+    height: 300px; /* Adjust as needed */
+    color: white;
+    }
+
+    .bg-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5); /* 50% opacity black overlay */
+    }
+
+    .content {
+    position: relative;
+    z-index: 1;
+    padding: 20px;
+    }
+
+    .pulse-heading {
+    animation: fadeinout 2s ease-in-out infinite;
+    }
+
+    @keyframes fadeinout {
+        0% {
+            opacity: 0;
+        }
+        50% {
+            opacity: 1;
+        }
+        100% {
+            opacity: 0;
+        }
+    }
+</style>
+{% endblock extralinks %}
+
+
+
+{% block title %}
+News365-Index
+{% endblock title %}
+
+
+
+
+
+
+
+{% block content %}
+
+
+
+    <!-- Blog Posts 2 Section -->
+    <section id="blog-posts-2" class="blog-posts-2 section">
+
+
+        <h1 class="ms-4 mb-5 pulse-heading text-danger">Most Update News</h1>
+
+        {% if latest_news %}
+        <div class="ps-3 pe-3">
+            <div class="row">
+                <div  class="col-lg-8 me-auto p-2">
+
+                   <div class="p-3" style="background-image: url('{{latest_news.0.image1}}'); background-size: cover;">
+                    <a href="/news-details/{{latest_news.0.id}}/">
+                        <h1 class="me-auto ms-auto mt-5  text-over-image">{{latest_news.0.head_lines}}</h1>
+                        <p class="btn btn-success rounded shadow-sm">{{latest_news.0.created_at}}</p>
+                        <p style="text-align: justify;" class="fs-5 text-over-image">{{ latest_news.0.discriptions|slice:":1000" }}...</p>
+                
+                    </a>
+                   </div>
+
+                </div>
+
+                <div class="col-lg-4 ms-auto ">
+                    <div class="row">
+                        <div class="col-12 p-2"   >
+                            <div class="p-2" style="background-image: url('{{latest_news.1.image1}}'); background-size: cover;" >
+                                <a href="/news-details/{{latest_news.1.id}}/">
+                                    <h4 class="me-auto ms-auto mt-5 mb-3 text-over-image">{{latest_news.1.head_lines|slice:":30"}}...</h4>
+                                    <span class="bg-warning p-1 rounded mb-2" >{{latest_news.1.created_at}}</span>
+                                    <p style="text-align: justify;" class="fs-6 text-over-image mt-2">{{ latest_news.1.discriptions|slice:":250" }}...</p>
+                                </a>
+                            </div>
+                         </div>
+
+                         <div class="col-12 p-2"  >
+                            <div class="p-2" style="background-image: url('{{latest_news.2.image1}}'); background-size: cover;">
+                                <a href="/news-details/{{latest_news.2.id}}/">
+                                    <h4 class="me-auto ms-auto mt-5 mb-3 text-over-image">{{latest_news.2.head_lines|slice:":30"}}...</h1>
+                                    <span class="bg-warning p-1 rounded " >{{latest_news.2.created_at}}</span>
+                                    <p style="text-align: justify;" class="fs-6 text-over-image mt-2">{{ latest_news.2.discriptions|slice:":250" }}...</p>
+                                    
+                                </a>
+                            </div>
+                            
+                         </div>
+
+                    </div>
+
+                    
+                </div>
+
+            </div>
+        </div>
+        {% else %}
+        <h1>404 News not found</h1>
+        {% endif %}
+
+        <hr>
+
+        <div class="mb-4 text-center col-lg-6 me-auto ms-auto">
+            <input type="text" id="searchInput" class="form-control" placeholder="Search news..." onkeyup="filterAndPaginate()">
+        </div>
+
+
+        {% if latest_news|length > 4 %}
+
+        <div class="container-fluid">
+            <div id="newsContainer" class="row">
+                {% for new in latest_news|slice:"4:" %}
+                <div  class="col-lg-3 mt-2 news-post">
+                    <div class="p-2 card shadow-sm">
+                        <img  style="height: 200px; width: 100%;" src="{{new.image1}}" alt="">
+                        <h3 class="headline">{{new.head_lines|slice:"0:25"}}...</h2>
+                        <a class="btn btn-success" href="/news-details/{{new.id}}/">details</a>
+                    </div>
+                    
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% else %}
+        <h1>Not More News...</h1>
+       
+       {% endif %}
+
+
+
+       <div class="text-center mt-4">
+        <button onclick="prevPage()" class="btn btn-secondary me-2">Previous</button>
+        <span id="pageNumber" class="fw-bold"></span>
+        <button onclick="nextPage()" class="btn btn-secondary ms-2">Next</button>
+        </div>
+
+
+      </section><!-- /Blog Posts 2 Section -->
+  
+
+    
+
+{% endblock content %}
+
+
+
+{% block extrascripts %}
+
+<script>
+    let currentPage = 1;
+    const postsPerPage = 20;
+    let allPosts = [];
+    let filteredPosts = [];
+
+    function initPosts() {
+        allPosts = Array.from(document.querySelectorAll(".news-post"));
+        filteredPosts = [...allPosts];
+    }
+
+    function filterAndPaginate() {
+        const input = document.getElementById("searchInput").value.toLowerCase();
+
+        // Filter from original posts
+        filteredPosts = allPosts.filter(post => {
+            const headline = post.querySelector(".headline")?.innerText.toLowerCase() || "";
+            return headline.includes(input);
+        });
+
+        currentPage = 1;
+        paginate();
+    }
+
+    function paginate() {
+        const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+
+        // Hide all posts
+        allPosts.forEach(post => post.style.display = "none");
+
+        // Show only paginated posts
+        const start = (currentPage - 1) * postsPerPage;
+        const end = start + postsPerPage;
+        filteredPosts.slice(start, end).forEach(post => post.style.display = "");
+
+        // Update pagination controls
+        document.getElementById("pageNumber").innerText = `Page ${currentPage} of ${totalPages || 1}`;
+        document.querySelector("button[onclick='prevPage()']").disabled = currentPage === 1;
+        document.querySelector("button[onclick='nextPage()']").disabled = currentPage >= totalPages;
+    }
+
+    function prevPage() {
+        if (currentPage > 1) {
+            currentPage--;
+            paginate();
+        }
+    }
+
+    function nextPage() {
+        const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+        if (currentPage < totalPages) {
+            currentPage++;
+            paginate();
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        initPosts();
+        paginate();  // Show first page
+    });
+</script>
+
+    
+<!-- JS to Toggle Form -->
+    
+
+
+{% endblock extrascripts %}
+
+
+

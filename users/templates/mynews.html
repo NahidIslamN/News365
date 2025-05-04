@@ -1,0 +1,188 @@
+{% extends 'basepage.html' %}
+
+{% block title %}News365-MyNews{% endblock title %}
+
+{% block content %}
+
+<!-- New Button -->
+<button id="showFormBtn" class="btn d-block btn-primary me-auto ms-auto mt-4 ps-4 pe-4">
+    <i class="fa-solid fa-plus fs-3"></i> <span class="fs-3">New</span>
+</button>
+
+<!-- Form (Initially Hidden) -->
+<div id="newsForm" class="container mt-4 d-none">
+
+    <div class="row">
+        <div class="col-lg-8 me-auto ms-auto">
+            {% if messages %}
+            {{message.tags}}  
+            <div class="alert alert-primary" role = 'alert'>
+              {% for message in messages %}
+              {{message}}
+              {% endfor %}
+    
+            </div>
+            {% endif %}
+    
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Add News</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{% url 'usernews' %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        {{forms}}
+
+
+
+                        <button type="submit" class="btn btn-success">Submit</button>
+                        <button type="button" class="btn btn-secondary ms-2" onclick="toggleForm()">Cancel</button>
+                    </form>
+                </div>
+            </div>
+
+
+
+            
+        </div>
+    </div>
+
+</div>
+
+
+<!-- News List Title -->
+<h3 class="text-center p-3 mt-5">My news Here...</h3>
+
+<!-- Blog Posts Section -->
+<section id="blog-posts-2" class="blog-posts-2 section">
+    <div class="ps-3 pe-3">
+
+        <!-- Search Input -->
+        <div class="mb-4 text-center col-lg-6 me-auto ms-auto">
+            <input type="text" id="searchInput" class="form-control" placeholder="Search news..." onkeyup="filterAndPaginate()">
+        </div>
+
+        <!-- News Container -->
+        <div id="newsContainer">
+            {% for news in mynews %}
+            <a href="/users/mynews/{{news.id}}/">
+                <div class="row mt-2 news-post">
+                    <div class="col-lg-8 me-auto ms-auto card p-3 shadow-sm">
+                        <div class="row">
+                            <div style="background-image: url('{{news.image1}}'); background-size: cover;" class="col-6"></div>
+                            <div class="col-6 text-dark">
+                                <h4 class="mb-2 headline ">{{ news.head_lines }}</h4>
+                                <span class="p-1 rounded bg-warning">{{ news.created_at }}</span>
+                                <p class="mt-2 description">{{ news.discriptions|slice:"0:400" }}...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination Controls -->
+        <div class="text-center mt-4">
+            <button onclick="prevPage()" class="btn btn-secondary me-2">Previous</button>
+            <span id="pageNumber" class="fw-bold"></span>
+            <button onclick="nextPage()" class="btn btn-secondary ms-2">Next</button>
+        </div>
+    </div>
+    <hr>
+</section>
+
+
+
+{% endblock content %}
+
+
+
+
+
+
+
+{% block extrascripts %}
+
+<script>
+    const formDiv = document.getElementById('newsForm');
+    const btn = document.getElementById('showFormBtn');
+
+    function toggleForm() {
+        formDiv.classList.toggle('d-none');
+    }
+
+    btn.addEventListener('click', toggleForm);
+</script>
+
+
+
+<script>
+    let currentPage = 1;
+    const postsPerPage = 10;
+    let filteredPosts = [];
+    
+    function filterAndPaginate() {
+        const input = document.getElementById("searchInput").value.toLowerCase();
+        const allPosts = Array.from(document.getElementsByClassName("news-post"));
+    
+        // Filter and store the results
+        filteredPosts = allPosts.filter(post => {
+            const headline = post.querySelector(".headline").innerText.toLowerCase();
+            const description = post.querySelector(".description").innerText.toLowerCase();
+            return headline.includes(input) || description.includes(input);
+        });
+    
+        // Hide all posts
+        allPosts.forEach(post => post.style.display = "none");
+    
+        // Reset to page 1
+        currentPage = 1;
+        paginate();
+    }
+    
+    function paginate() {
+        const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+    
+        // Hide all filtered posts
+        filteredPosts.forEach(post => post.style.display = "none");
+    
+        // Show current page posts
+        const start = (currentPage - 1) * postsPerPage;
+        const end = start + postsPerPage;
+        filteredPosts.slice(start, end).forEach(post => post.style.display = "");
+    
+        // Update pagination UI
+        document.getElementById("pageNumber").innerText = `Page ${currentPage} of ${totalPages || 1}`;
+        document.querySelector("button[onclick='prevPage()']").disabled = currentPage === 1;
+        document.querySelector("button[onclick='nextPage()']").disabled = currentPage >= totalPages;
+    }
+    
+    function prevPage() {
+        if (currentPage > 1) {
+            currentPage--;
+            paginate();
+        }
+    }
+    
+    function nextPage() {
+        const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+        if (currentPage < totalPages) {
+            currentPage++;
+            paginate();
+        }
+    }
+    
+    // Initial setup
+    document.addEventListener("DOMContentLoaded", function () {
+        filterAndPaginate(); // triggers default display
+    });
+    </script>
+    
+    
+    
+<!-- JS to Toggle Form -->
+    
+
+{% endblock extrascripts %}
