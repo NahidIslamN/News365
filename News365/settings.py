@@ -132,9 +132,9 @@ STATICFILES_DIRS = [
 
 # Cloudinary Configuration
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': 'dzosx7ytl',
-    'API_KEY': '311389689153866',
-    'API_SECRET': 'SSoXcP13BbiW0xvqlYkjQMltAM4',
+    'CLOUD_NAME': 'your cloud name',
+    'API_KEY': 'your_cloudinary_api',
+    'API_SECRET': 'your_cloudinary_api_secret',
 }
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
